@@ -1,0 +1,40 @@
+name: CI/CD - Kubernetes Deployment
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker
+        uses: docker/setup-buildx-action@v3
+
+      - name: Create Kubernetes cluster (kind)
+        uses: helm/kind-action@v1.10.0
+        with:
+          cluster_name: devops
+          wait: 120s
+
+      - name: Build Docker image
+        run: docker build -t backend-app:latest ./app
+
+      - name: Load image into kind cluster
+        run: kind load docker-image backend-app:latest --name devops
+
+      - name: Deploy application to Kubernetes
+        run: |
+          kubectl apply -f k8s/
+          kubectl rollout status deployment/backend-app
+
+      - name: Test application health endpoint
+        run: |
+          kubectl port-forward svc/backend-service 8080:80 &
+          sleep 10
+          curl http://localhost:8080/health
