@@ -29,6 +29,6 @@ def current_time():
 @app.get("/config")
 def config():
     return {
-        "app_name": os.getenv("APP_NAME", "not-set"),
-        "environment": os.getenv("ENV", "not-set")
+        "app_name": os.getenv("APP_NAME", "Use-case-demo"),
+        "environment": os.getenv("ENV", "Cloud")
     }
